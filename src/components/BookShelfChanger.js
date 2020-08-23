@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 
 class BookShelfChanger extends Component {
 
@@ -6,9 +6,15 @@ class BookShelfChanger extends Component {
         value: this.props.value,
     };
 
+    componentDidMount() {
+        this.setState({
+            value: this.props.value,
+        });
+    }
+
     dealWithChange = (event) => {
-        const { value } = event.target;
-        this.setState({ value });
+        const {value} = event.target;
+        this.setState({value});
         this.props.onChanged(this.props.book, value);
     };
 

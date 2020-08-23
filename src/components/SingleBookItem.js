@@ -6,16 +6,21 @@ const SingleBookItem = (props) => {
     return (
         <div className="book" key={item.id}>
             <div className="book-top">
-                <div className="book-cover" style={{width: 128, height: 190, backgroundImage: `url('${item.imageLinks.smallThumbnail}')`}}>
+                <div className="book-cover" style={item.imageLinks
+                    ? {
+                        width: 128, height: 190, backgroundImage: `url('${item.imageLinks.smallThumbnail}')`
+                    }
+                    : {}
+                }>
                 </div>
                 <BookShelfChanger
                     book={item}
-                    value={item.shelf}
+                    value={item.shelf ? item.shelf : 'none'}
                     onChanged={onChanged}
                 />
             </div>
             <div className="book-title">{item.title}</div>
-            <div className="book-authors">{item.authors}</div>
+            <div className="book-authors">{item.authors ? item.authors.join(", ") : "No Authors available"}</div>
         </div>
     );
 };

@@ -3,11 +3,15 @@ import {BrowserRouter, Link, Route} from "react-router-dom";
 import * as BooksAPI from './BooksAPI'
 import './App.css'
 import ListBooks from "./components/ListBooks";
+import SearchBooks from "./components/SearchBooks";
 
 class BooksApp extends React.Component {
     state = {
         booksCurrentlyAssignedToShelf: [],
-        loadingBooksInProgress: false
+        loadingBooksInProgress: false,
+        query: '',
+        searchResults: [],
+        searchError: false
     }
 
     componentDidMount() {
@@ -25,6 +29,35 @@ class BooksApp extends React.Component {
             }));
         });
     }
+
+    searchBook = (query) => {
+        this.setState({
+            query: query,
+        });
+
+        this.doSearch(this.state.query);
+    };
+
+    // do a search with a query
+    doSearch = (query) => {
+        if (query.length > 0) {
+            BooksAPI.search(query).then((books) => {
+                if (books.error) {
+                    this.setState({searchResults: [], searchError: true});
+                } else {
+                    if (this.state.query.length === 0) {
+                        this.setState({searchResults: [], searchError: false});
+                        return;
+                    }
+
+                    this.setState({searchResults: books, searchError: false, query: query});
+                }
+            });
+        } else {
+            this.setState({searchResults: [], searchError: false});
+        }
+    };
+
     //update shelf for book
     updateShelfForBook = (book, shelf) => {
         BooksAPI.update(book, shelf);
@@ -35,8 +68,7 @@ class BooksApp extends React.Component {
                     return b.id !== book.id;
                 }),
             }));
-        }
-        else {
+        } else {
             let bookToBeUpdated = book;
             bookToBeUpdated.shelf = shelf;
 
@@ -46,26 +78,27 @@ class BooksApp extends React.Component {
                     .concat(bookToBeUpdated),
             }));
         }
+
     };
-    //{() => history.push('/')}
 
     render() {
         return (
             <BrowserRouter>
                 <Route exact path="/search">
                     <div className="search-books">
-                        <div className="search-books-bar">
-                            <button className="close-search" onClick={event =>  window.location.href='/'}>Close</button>
-                            <div className="search-books-input-wrapper">
-                                <input type="text" placeholder="Search by title or author"/>
-                            </div>
-                        </div>
+                        <SearchBooks handleSearch={this.searchBook}/>
                         <div className="search-books-results">
                             <ListBooks
-                                items={this.state.booksCurrentlyAssignedToShelf}
+                                items={this.state.searchResults.map((singleSearchResult) => {
+                                    const bookInShelf = this.state.booksCurrentlyAssignedToShelf.filter(
+                                        (bookInShelf) => bookInShelf.id === singleSearchResult.id
+                                    )[0];
+                                    singleSearchResult.shelf = bookInShelf ? bookInShelf.shelf : "none";
+                                    return singleSearchResult;
+                                })}
                                 active={'all'}
-                                isSearch={false}
-                                error={false}
+                                isSearch={true}
+                                error={this.state.error}
                                 handleUpdate={this.updateShelfForBook}
                             />
                         </div>
@@ -97,25 +130,25 @@ class BooksApp extends React.Component {
                                     <div className="bookshelf">
                                         <h2 className="bookshelf-title">Want to Read</h2>
                                         <div className="bookshelf-books">
-                                          <ListBooks
-                                              items={this.state.booksCurrentlyAssignedToShelf}
-                                              active={'wantToRead'}
-                                              isSearch={false}
-                                              error={false}
-                                              handleUpdate={this.updateShelfForBook}
-                                          />
+                                            <ListBooks
+                                                items={this.state.booksCurrentlyAssignedToShelf}
+                                                active={'wantToRead'}
+                                                isSearch={false}
+                                                error={false}
+                                                handleUpdate={this.updateShelfForBook}
+                                            />
                                         </div>
                                     </div>
                                     <div className="bookshelf">
                                         <h2 className="bookshelf-title">Read</h2>
                                         <div className="bookshelf-books">
-                                          <ListBooks
-                                              items={this.state.booksCurrentlyAssignedToShelf}
-                                              active={'read'}
-                                              isSearch={false}
-                                              error={false}
-                                              handleUpdate={this.updateShelfForBook}
-                                          />
+                                            <ListBooks
+                                                items={this.state.booksCurrentlyAssignedToShelf}
+                                                active={'read'}
+                                                isSearch={false}
+                                                error={false}
+                                                handleUpdate={this.updateShelfForBook}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -131,3 +164,8 @@ class BooksApp extends React.Component {
 }
 
 export default BooksApp
+
+
+
+
+

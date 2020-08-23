@@ -2,7 +2,7 @@ import React from "react";
 import SingleBookItem from "./SingleBookItem";
 
 export default function ListBooks(props) {
-    const { items, active, handleUpdate, isSearch } = props;
+    const {items, active, handleUpdate, isSearch} = props;
     const booksToDisplay = isSearch
         ? items
         : items.filter((book) => (active === "all" ? book : book.shelf === active));
@@ -12,8 +12,8 @@ export default function ListBooks(props) {
             {booksToDisplay && booksToDisplay.length > 0 ? (
                 booksToDisplay.map((item) => {
                     return (
-                        <li>
-                        <SingleBookItem key={item.id} item={item} onChanged={handleUpdate} />
+                        <li key={item.id}>
+                            <SingleBookItem key={item.id} item={item} onChanged={handleUpdate}/>
                         </li>
                     );
                 })
